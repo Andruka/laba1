@@ -207,9 +207,9 @@ class recoder
 		if(mostfrequent==KOI8R_SYMBOL){cout<<"Кодировка koi8-r"<<endl;return 0;}
 		for(j=1;j<4;j++)
 			{
-			simvol[j]=new unsigned char[j*6];
-			r=0;
-			t=j*6;	
+			t=(int)pow(6,j);
+			simvol[j]=new unsigned char[t];
+			r=0;	
 			while(r<t)
 		  		{for(i=0;i<6;i++)
 					{
