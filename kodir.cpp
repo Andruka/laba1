@@ -136,7 +136,7 @@ class recoder
 {
 	unsigned short count[128];
 	int way[4];
-	int recodes;
+	int recodes=0;
 	unsigned char mostfrequent;
 	int original_code;
  public:
@@ -202,7 +202,9 @@ class recoder
 		int j,i,r,t,q;
 		unsigned char * simvol[4];
 		simvol[0] = new unsigned char (mostfrequent);
-		if(mostfrequent==0xee|0xae|0xcf)return 1;
+		if(mostfrequent==CP1251_SYMBOL){cout<<"Кодировка cp1251"<<endl;return 0;}
+		if(mostfrequent==CP866_SYMBOL){cout<<"Кодировка cp866"<<endl;return 0;}
+		if(mostfrequent==KOI8R_SYMBOL){cout<<"Кодировка koi8-r"<<endl;return 0;}
 		for(j=1;j<4;j++)
 			{
 			simvol[j]=new unsigned char[j*6];
@@ -217,11 +219,9 @@ class recoder
 						}
 					simvol[j][r]=simvol[j-1][r/6];
 					translate(simvol[j][r], i);
-					if(simvol[j][r]==0xee|0xae|0xcf)
-						{
-						recodes=j;
-						return 1;
-						}
+						if(simvol[j][r]==CP1251_SYMBOL){cout<<"Кодировка cp1251"<<endl;recodes=j;return 1;}
+						if(simvol[j][r]==CP866_SYMBOL){cout<<"Кодировка cp866"<<endl;recodes=j;return 1;}
+						if(simvol[j][r]==KOI8R_SYMBOL){cout<<"Кодировка koi8-r"<<endl;recodes=j;return 1;}
 					r++;
 					}
 		  		}
@@ -247,8 +247,8 @@ class recoder
 					{
 					translate(b, way[i+1]);
 					}
-				oFile << (char)b;
 				}
+			oFile << (char)b;
 			}
 		return 1;
 		}
