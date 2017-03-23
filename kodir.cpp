@@ -204,7 +204,7 @@ class recoder
 		int j,i,r,t,q;
 		unsigned char * simvol[4];
 		simvol[0] = new unsigned char (mostfrequent);
-		if(Check(mostfrequent)==1){return 1;}
+		if(Check(mostfrequent)==0){return 1;}
 		for(j=1;j<4;j++)
 			{
 			t=(int)pow(6,j);
@@ -216,7 +216,7 @@ class recoder
 					
 					simvol[j][r]=simvol[j-1][r/6];
 					translate(simvol[j][r], i);
-						if(Check(simvol[j][r])==1){
+						if(Check(simvol[j][r])==0){
 							for(q=j;q>0;q--)
 								{
 								way[q]=(r/(int)(pow(6,(q-1))))%6;
