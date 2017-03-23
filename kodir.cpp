@@ -153,15 +153,17 @@ class recoder
 		}
 	int readfile(const char* iFileName) {
 		char ch;
+		int i;
 		ifstream iFile;
 		iFile.open(iFileName);
 		if(!iFile)
 			{
 			return 1;
 			}
-		while(!iFile.eof())
+		for(i=0;i<5000;i++)
 			{
 			iFile.get(ch);
+			if(iFile.eof()){break;}
 			if(ch&0x80)count[ch]++;
 			}
 		iFile.close();
