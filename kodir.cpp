@@ -134,22 +134,22 @@ static const unsigned char Koi8RToCp866[ 128 ] = {
 };
 class recoder
 {
-	unsigned short count[128];
-	int way[4];
-	int recodes=0;
+	unsigned short count[256];
+	unsigned short way[4];
+	int recodes;
 	unsigned char mostfrequent;
-	int original_code;
  public:
 	recoder() {
 		for(int i=0;i<4;i++)
 			{
 			way[i]=0;
 			}
-		for(int i=0;i<128;i++)
+		for(int i=128;i<256;i++)
 			{
 			count[i]=0;
 			}
 		recodes=0;
+		mostfrequent=128;
 		}
 	int readfile(const char* iFileName) {
 		char ch;
@@ -157,24 +157,24 @@ class recoder
 		iFile.open(iFileName);
 		if(!iFile)
 			{
-			cout<<"Файл"<<iFileName<<"отсутствует"<<endl;
-			return 0;
+			return 1;
 			}
 		while(!iFile.eof())
 			{
 			iFile.get(ch);
-			if(ch&0x80)count[ch&0x7f]++;
+			if(ch&0x80)count[ch]++;
 			}
-		return 1;
+		iFile.close();
+		return 0;
 		}
 	int findpopular() {
 		int i;
-		for(i=0;i<128;i++)
+		for(i=128;i<256;i++)
 			{
 			if(count[mostfrequent]<count[i])mostfrequent=i;
 			}
-		mostfrequent=mostfrequent|0x80;
-		return 1;
+		if(count[mostfrequent]==0){return 1;}
+		return 0;
 		}
 	void translate(unsigned char& simvol, int algoritm) {
 	        switch (algoritm) {
@@ -202,9 +202,7 @@ class recoder
 		int j,i,r,t,q;
 		unsigned char * simvol[4];
 		simvol[0] = new unsigned char (mostfrequent);
-		if(mostfrequent==CP1251_SYMBOL){cout<<"Кодировка cp1251"<<endl;return 0;}
-		if(mostfrequent==CP866_SYMBOL){cout<<"Кодировка cp866"<<endl;return 0;}
-		if(mostfrequent==KOI8R_SYMBOL){cout<<"Кодировка koi8-r"<<endl;return 0;}
+		if(Check(mostfrequent)==1){return 1;}
 		for(j=1;j<4;j++)
 			{
 			t=(int)pow(6,j);
@@ -213,27 +211,44 @@ class recoder
 			while(r<t)
 		  		{for(i=0;i<6;i++)
 					{
-					for(q=j;q>0;q--)
-						{
-						way[q]=(r/(int)(pow(6,(q-1))))%6;
-						}
+					
 					simvol[j][r]=simvol[j-1][r/6];
 					translate(simvol[j][r], i);
-						if(simvol[j][r]==CP1251_SYMBOL){cout<<"Кодировка cp1251"<<endl;recodes=j;return 1;}
-						if(simvol[j][r]==CP866_SYMBOL){cout<<"Кодировка cp866"<<endl;recodes=j;return 1;}
-						if(simvol[j][r]==KOI8R_SYMBOL){cout<<"Кодировка koi8-r"<<endl;recodes=j;return 1;}
+						if(Check(simvol[j][r])==1){
+							for(q=j;q>0;q--)
+								{
+								way[q]=(r/(int)(pow(6,(q-1))))%6;
+								}
+							recodes=j;
+							for(i=recodes;i>0;i--)
+								{
+								showRules(way[i]);
+								}
+							for (int i = 0; i < j + 1 ; i++) {
+      							delete [] simvol[i];}
+							return 0;
+							}
 					r++;
 					}
 		  		}
 			}
-        		for (int i = 0; i < j + 1 ; i++) {
-      			delete [] simvol[i];}	
-			return 0;
+			return 1;
 		}
 	int writefile(const char* iFileName , const char* oFileName) {
-		int i;
+		int i,j;
 		char ch;
-		unsigned char b;
+		unsigned char recoded[256];
+		for(i=128;i<256;i++)
+			{
+			recoded[i]=i;
+			}
+		for(i=128;i<256;i++)
+			{
+			for(j=recodes;j>0;j--)
+				{
+				translate(recoded[i], way[j]);
+				}
+			}
 		ifstream iFile;
         	ofstream oFile;
         	iFile.open (iFileName);
@@ -242,26 +257,65 @@ class recoder
 			{
 			iFile.get(ch);
 			if(ch&0x80)
-				{b=(unsigned char)ch;
-				for(i=0;i<recodes;i++)
-					{
-					translate(b, way[i+1]);
-					}
+				{
+				ch=recoded[ch];
+				oFile << (char)ch;
 				}
-			oFile << (char)b;
+			oFile << ch;
 			}
-		return 1;
+        iFile.close();
+        oFile.close();
+		return 0;
+		}
+	    void showRules (int rule) {
+        switch (rule) {
+            case 0:
+                cout << "Cp1251 -> Cp866 ." << endl ;
+                break;
+            case 1:
+                cout << "Cp1251 -> Koi8R ." << endl ;
+                break;
+            case 2:
+                cout << "Cp866  -> Cp1251." << endl ;
+                break;
+            case 3:
+                cout << "Cp866  -> Koi8R ." << endl ;
+                break;
+            case 4:
+                cout << "Koi8R  -> Cp1251." << endl ;
+                break;
+            case 5:
+                cout << "Koi8R  -> Cp866 ." << endl ;
+        }
+    }
+	    int Check(unsigned char simvol){
+		if(simvol==CP1251_SYMBOL){cout<<"Первоначальная кодировка: cp1251"<<endl;return 0;}
+		if(simvol==CP866_SYMBOL){cout<<"Первоначальная кодировка: cp866"<<endl;return 0;}
+		if(simvol==KOI8R_SYMBOL){cout<<"Первоначальная кодировка: koi8-r"<<endl;return 0;}
+		else{return 1;}
 		}
 };
 int main (int argc, char *argv[]) {
 	recoder ob;
 	if (argc < 3) {
-        	cout << "Not enough files for work." << endl;
-        	return 0;
+        	cout << "Не хватает файлов для начала работы!." << endl;
+        	return 1;
 		}
-	ob.readfile(argv[1]);
-	ob.findpopular();
-	ob.findway();
+	if(ob.readfile(argv[1])==1)
+		{
+		cout<<"Файл для чтения отсутствует!"<<endl;
+		return 1;
+		}
+	if(ob.findpopular()==1)
+		{
+		cout<<"Файл состоит из символов ASCII."<<endl;
+		return 1;
+		}
+	if(ob.findway()==0)
+		{
+		cout<<"Первоначальная кодировка не найдена!"<<endl;
+		return 1;
+		}
 	ob.writefile(argv[1] ,argv[2]);
-	return 0;
+	return 1;
 	}
