@@ -164,7 +164,7 @@ class recoder
 			{
 			iFile>>ch;
 			if(iFile.eof()){break;}
-			if(ch&0x80)count[ch]++;
+			count[ch]++;
 			}
 		iFile.close();
 		return 0;
