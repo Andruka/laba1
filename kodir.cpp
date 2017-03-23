@@ -238,9 +238,9 @@ class recoder
 		}
 	int writefile(const char* iFileName , const char* oFileName) {
 		int i,j;
-		char ch;
+		unsigned char ch;
 		unsigned char recoded[256];
-		for(i=128;i<256;i++)
+		for(i=0;i<256;i++)
 			{
 			recoded[i]=i;
 			}
@@ -257,13 +257,8 @@ class recoder
 		oFile.open (oFileName);
 		while(!iFile.eof())
 			{
-			iFile.get(ch);
-			if(ch&0x80)
-				{
-				ch=recoded[ch];
-				oFile << (char)ch;
-				}
-			oFile << ch;
+			iFile >> ch;	
+			oFile << recoded[ch];
 			}
         iFile.close();
         oFile.close();
