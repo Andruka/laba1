@@ -152,7 +152,7 @@ class recoder
 		mostfrequent=128;
 		}
 	int readfile(const char* iFileName) {
-		char ch;
+		unsigned char ch;
 		int i;
 		ifstream iFile;
 		iFile.open(iFileName);
@@ -162,7 +162,7 @@ class recoder
 			}
 		for(i=0;i<5000;i++)
 			{
-			iFile.get(ch);
+			iFile>>ch;
 			if(iFile.eof()){break;}
 			if(ch&0x80)count[ch]++;
 			}
