@@ -308,7 +308,7 @@ int main (int argc, char *argv[]) {
 		cout<<"Файл состоит из символов ASCII."<<endl;
 		return 1;
 		}
-	if(ob.findway()==0)
+	if(ob.findway()==1)
 		{
 		cout<<"Первоначальная кодировка не найдена!"<<endl;
 		return 1;
